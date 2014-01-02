@@ -240,7 +240,8 @@ function updateRawURL(event) {
 }
 
 function setRawURL(rawURL) {
-    $('#raw-url').val(rawURL);
+    if($('#raw-url').val() != rawURL)
+        $('#raw-url').val(rawURL);
     $('.link').text(rawURL).attr('href', rawURL);
 }
 
