@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>API caller</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+    <style>
+      body {
+          font-family: sans-serif;
+          font-size: 15px;
+      }
+
+      #error {
+          color: red;
+      }
+
+      h3 {
+          width: 100px;
+          float: left;
+          margin: 5px;
+          font-weight: normal;
+          font-size: 15px;
+      }
+
+      input {
+          display: block;
+          float: left;
+          width: 70%;
+          padding: 4px;
+          border: 1px solid #BBB;
+      }
+
+      #params {
+          width: 70%;
+          float: left;
+      }
+
+      #params .param {
+          clear: both;
+      }
+
+      #params input {
+          width: 35%;
+          margin-right: 20px;
+      }
+
+      .param.disabled input {
+          color: #AAA;
+      }
+
+      .param.disabled .disable-param {
+          display: none;
+      }
+
+      .param .enable-param {
+          display: none;
+      }
+
+      .param.disabled .enable-param {
+          display: inline-block;
+      }
+
+      .param a {
+          display: inline-block;
+          margin-right: 10px;
+      }
+
+      .section {
+          clear: both;
+      }
+
+      #add-param {
+          clear: both;
+          display: block;
+          margin-bottom: 20px;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div id="request">
+      <p id="error"></p>
+      <div class="section">
+        <h3>Raw URL</h3>
+        <input id="raw-url" type="text" />
+      </div>
+      <div class="section">
+        <h3>Host</h3>
+        <input class="dynamic" id="host" type="text" />
+      </div>
+      <div class="section">
+        <h3>Path</h3>
+        <input class="dynamic" id="path" type="text" />
+      </div>
+      <div class="section">
+        <h3>Params</h3>
+        <div id="params">
+        </div>
+        <a href="#" id="add-param">Add param</a>
+      </div>
+      <!-- <input id="fetch" type="button" value="Fetch" /> -->
+      <a class="link"></a>
+    </div>
+    <div id="response">
+      <div id="loading"></div>
+    </div>
+
+    <script type="text/javascript">
+
+      $(function() {
+          var hashValue = getHashValue();
+          if(hashValue) {
+              setRawURL(hashValue);
+              updateDynamicInputs();
+          }
+          // $('#fetch').click(fetch);
+          $('#raw-url').on('keyup change', updateDynamicInputs);
+          $('#request').on('keyup change', '.dynamic', updateRawURL);
+          $('#add-param').on('click', addParam);
+          $('#params').on('click', '.disable-param', disableParam);
+          $('#params').on('click', '.enable-param', enableParam);
+          $('#params').on('click', '.remove-param', removeParam);
+      });
+
+function getHashValue() {
+    var hash = window.location.hash.substr(1);
+    return decodeURIComponent(hash);
+};
+
+function setHashValue(rawURL) {
+    window.location.hash = encodeURIComponent(rawURL);
+};
+
+function error(message) {
+    $('#error').show().text(message);
+};
+
+function addParam(event) {
+    addParamPartInput('', '');
+    updateRawURL();
+    return false;
+};
+
+function removeParam(event) {
+    var $param = $(event.target).parent();
+    $param.remove();
+    updateRawURL();
+    return false;
+};
+
+function disableParam(event) {
+    var $param = $(event.target).parent();
+    $param.addClass('disabled');
+    updateRawURL();
+    return false;
+};
+
+function enableParam(event) {
+    var $param = $(event.target).parent();
+    $param.removeClass('disabled');
+    updateRawURL();
+    return false;
+};
+
+function parseURL(rawURL) {
+    var regex = /^((?:.+:\/\/)?[a-zA-Z\-_\.0-9]+)(\/[^\?]+)?(\?.*)?$/;
+    var match = rawURL.match(regex);
+    if(!match) {
+        error('Invalid URL');
+        return {};
+    }
+    var parsed = {};
+    parsed.host = match[1];
+    parsed.path = match[2];
+    parsed.params = [];
+    var paramString = match[3];
+    if(paramString) {
+        paramString = paramString.substr(1);
+        var params = paramString.split('&');
+        for(var i = 0; i < params.length; i ++) {
+            var split = params[i].split('=');
+            parsed.params.push({
+                name: split[0],
+                value: split[1]
+            });
+        }
+    }
+    return parsed;
+};
+
+function updateDynamicInputs(event) {
+    error('');
+
+    rawURL = $('#raw-url').val();
+    $('#params').html('');
+
+    var parts = parseURL(rawURL);
+    $('#host').val(parts.host);
+    $('#path').val(parts.path);
+    console.log(parts);
+    if(parts.params) {
+        for(var i = 0; i < parts.params.length; i ++) {
+            var param = parts.params[i];
+            addParamPartInput(param.name, param.value);
+        }
+    }
+}
+
+function addParamPartInput(name, value) {
+    var $params = $('#params');
+    var $param = $('<div class="param"></div>');
+    $params.append($param);
+    $param.append('<input class="dynamic param-name" type="text" value="' + name + '" />');
+    $param.append('<input class="dynamic param-value" type="text" value="' + value + '" />');
+    $param.append('<a href="#" class="disable-param">Disable</a>');
+    $param.append('<a href="#" class="enable-param">Enable</a>');
+    $param.append('<a href="#" class="remove-param">Remove</a>');
+}
+
+function updateRawURL(event) {
+    error('');
+
+    var rawURL = '';
+    rawURL += $('#host').val();
+    rawURL += $('#path').val();
+    var params = [];
+    $('#params .param:not(.disabled)').each(function(i, el) {
+        var $param = $(el);
+        var name = $param.find('.param-name').val();
+        var value = $param.find('.param-value').val();
+        if(name) {
+            params.push(name + '=' + $param.find('.param-value').val());
+        }
+    });
+    if(params.length) {
+        rawURL += '?' + params.join('&');
+    }
+    setRawURL(rawURL);
+
+    setHashValue(rawURL);
+}
+
+function setRawURL(rawURL) {
+    $('#raw-url').val(rawURL);
+    $('.link').text(rawURL).attr('href', rawURL);
+}
+
+    </script>
+
+  </body>
+</html>
