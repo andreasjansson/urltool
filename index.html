@@ -203,6 +203,7 @@ function updateDynamicInputs(event) {
         }
     }
     setRawURL(rawURL);
+    setHashValue(rawURL);
 }
 
 function addParamPartInput(name, value) {
@@ -235,7 +236,6 @@ function updateRawURL(event) {
         rawURL += '?' + params.join('&');
     }
     setRawURL(rawURL);
-
     setHashValue(rawURL);
 }
 
