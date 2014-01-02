@@ -161,7 +161,7 @@ function enableParam(event) {
 };
 
 function parseURL(rawURL) {
-    var regex = /^((?:.+:\/\/)?[a-zA-Z\-_\.0-9]+)(\/[^\?]+)?(\?.*)?$/;
+    var regex = /^((?:.+:\/\/)?[a-zA-Z\-_\.0-9:]+)(\/[^\?]+)?(\?.*)?$/;
     var match = rawURL.match(regex);
     if(!match) {
         error('Invalid URL');
