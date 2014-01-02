@@ -1,1 +1,1 @@
-andreas.jansson.me.uk/urltool
+http://andreas.jansson.me.uk/urltool
