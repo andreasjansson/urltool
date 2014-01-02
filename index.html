@@ -98,7 +98,6 @@
         </div>
         <a href="#" id="add-param">Add param</a>
       </div>
-      <!-- <input id="fetch" type="button" value="Fetch" /> -->
       <a class="link"></a>
     </div>
     <div id="response">
@@ -113,7 +112,6 @@
               setRawURL(hashValue);
               updateDynamicInputs();
           }
-          // $('#fetch').click(fetch);
           $('#raw-url').on('keyup change', updateDynamicInputs);
           $('#request').on('keyup change', '.dynamic', updateRawURL);
           $('#add-param').on('click', addParam);
@@ -204,6 +202,7 @@ function updateDynamicInputs(event) {
             addParamPartInput(param.name, param.value);
         }
     }
+    setRawURL(rawURL);
 }
 
 function addParamPartInput(name, value) {
